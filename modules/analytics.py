@@ -13,26 +13,27 @@ class FinancialAnalytics:
         
         fig = go.Figure()
         
+        # Garantir que os dados são arrays/lists
         fig.add_trace(go.Bar(
             name='Receitas',
-            x=monthly_data['month'],
-            y=monthly_data.get('income', 0),
+            x=monthly_data['month'].tolist(),
+            y=monthly_data.get('income', pd.Series([0] * len(monthly_data))).tolist(),
             marker_color='#22c55e',
             opacity=0.8
         ))
         
         fig.add_trace(go.Bar(
             name='Despesas',
-            x=monthly_data['month'],
-            y=monthly_data.get('expense', 0),
+            x=monthly_data['month'].tolist(),
+            y=monthly_data.get('expense', pd.Series([0] * len(monthly_data))).tolist(),
             marker_color='#ef4444',
             opacity=0.8
         ))
         
         fig.add_trace(go.Scatter(
             name='Saldo',
-            x=monthly_data['month'],
-            y=monthly_data['balance'],
+            x=monthly_data['month'].tolist(),
+            y=monthly_data['balance'].tolist(),
             mode='lines+markers',
             line=dict(color='#3b82f6', width=3),
             marker=dict(size=8),
@@ -120,10 +121,16 @@ class FinancialAnalytics:
         
         fig = go.Figure()
         
+        # Converter para listas para garantir que são arrays
+        months = monthly_data['month'].tolist()
+        income_data = monthly_data.get('income', pd.Series([0] * len(monthly_data))).tolist()
+        expense_data = monthly_data.get('expense', pd.Series([0] * len(monthly_data))).tolist()
+        balance_data = monthly_data['balance'].tolist()
+        
         fig.add_trace(go.Scatter(
             name='Receitas',
-            x=monthly_data['month'],
-            y=monthly_data.get('income', 0),
+            x=months,
+            y=income_data,
             mode='lines+markers',
             line=dict(color='#22c55e', width=3),
             marker=dict(size=6)
@@ -131,8 +138,8 @@ class FinancialAnalytics:
         
         fig.add_trace(go.Scatter(
             name='Despesas',
-            x=monthly_data['month'],
-            y=monthly_data.get('expense', 0),
+            x=months,
+            y=expense_data,
             mode='lines+markers',
             line=dict(color='#ef4444', width=3),
             marker=dict(size=6)
@@ -140,8 +147,8 @@ class FinancialAnalytics:
         
         fig.add_trace(go.Scatter(
             name='Saldo',
-            x=monthly_data['month'],
-            y=monthly_data['balance'],
+            x=months,
+            y=balance_data,
             mode='lines+markers',
             line=dict(color='#3b82f6', width=3, dash='dot'),
             marker=dict(size=6)
@@ -195,7 +202,7 @@ class FinancialAnalytics:
             yaxis_title='Valor Total (R$)',
             showlegend=False,
             plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)', 
             font=dict(color='#1f2937'),
             xaxis={'categoryorder': 'total descending'}
         )

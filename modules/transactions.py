@@ -41,28 +41,33 @@ class TransactionManager:
                 # Obter categorias baseadas no tipo selecionado
                 categories_df = self.db.get_categories(type=transaction_type)
                 
+                # DEBUG: Mostrar informações
+                # st.write(f"Tipo selecionado: {transaction_type}")
+                # st.write(f"Total de categorias encontradas: {len(categories_df)}")
+                # st.write(f"Categorias: {categories_df['name'].tolist() if not categories_df.empty else 'Nenhuma'}")
+                
                 if categories_df.empty:
-                    st.error("Nenhuma categoria encontrada para este tipo de transação")
-                    return
-                
-                category_options = categories_df['name'].tolist()
-                category_icons = categories_df.set_index('name')['icon'].to_dict()
-                
-                # Formatar opções com ícones
-                formatted_categories = [
-                    f"{category_icons.get(cat, '💰')} {cat}" 
-                    for cat in category_options
-                ]
-                
-                selected_category_formatted = st.selectbox(
-                    "Categoria",
-                    formatted_categories,
-                    help="Selecione a categoria da transação",
-                    key="category_select"
-                )
-                
-                # Extrair nome da categoria sem o ícone
-                selected_category = selected_category_formatted.split(' ', 1)[1] if selected_category_formatted else ""
+                    st.error("❌ Nenhuma categoria encontrada para este tipo de transação")
+                    selected_category = ""
+                else:
+                    category_options = categories_df['name'].tolist()
+                    category_icons = categories_df.set_index('name')['icon'].to_dict()
+                    
+                    # Formatar opções com ícones
+                    formatted_categories = [
+                        f"{category_icons.get(cat, '💰')} {cat}" 
+                        for cat in category_options
+                    ]
+                    
+                    selected_category_formatted = st.selectbox(
+                        "Categoria",
+                        formatted_categories,
+                        help="Selecione a categoria da transação",
+                        key="category_select"
+                    )
+                    
+                    # Extrair nome da categoria sem o ícone
+                    selected_category = selected_category_formatted.split(' ', 1)[1] if selected_category_formatted else ""
                 
                 description = st.text_input(
                     "Descrição",
@@ -71,7 +76,7 @@ class TransactionManager:
                     key="description_input"
                 )
             
-            # BOTÃO DE SUBMIT CORRETO - usando st.form_submit_button()
+            # Botão de submit
             submitted = st.form_submit_button(
                 "💾 Adicionar Transação",
                 use_container_width=True
@@ -80,7 +85,7 @@ class TransactionManager:
             if submitted:
                 if amount > 0 and selected_category:
                     try:
-                        self.db.add_transaction(
+                        transaction_id = self.db.add_transaction(
                             amount, 
                             transaction_type, 
                             selected_category, 
@@ -88,6 +93,7 @@ class TransactionManager:
                             transaction_date
                         )
                         st.success("✅ Transação adicionada com sucesso!")
+                        st.rerun()  # Recarregar a página para limpar o formulário
                     except Exception as e:
                         st.error(f"❌ Erro ao adicionar transação: {e}")
                 else:
