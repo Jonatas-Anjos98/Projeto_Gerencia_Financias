@@ -192,7 +192,7 @@ class FinanceApp:
             
             with col3:
                 st.markdown("""
-                <div style='background-color: #fef7cd; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #eab308;'>
+                <div style='background-color: #fff; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #eab308;'>
                     <h3>🎯 Metas</h3>
                     <p>• Controle financeiro</p>
                     <p>• Economia inteligente</p>
