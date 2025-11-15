@@ -172,7 +172,7 @@ class FinanceApp:
             
             with col1:
                 st.markdown("""
-                <div style='background-color: #f0f9ff; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #3b82f6;'>
+                <div style='background-color: #FAF5FF; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #3b82f6;'>
                     <h3>📝 Primeiros Passos</h3>
                     <p>1. Vá em <b>Nova Transação</b></p>
                     <p>2. Adicione suas receitas e despesas</p>
@@ -182,7 +182,7 @@ class FinanceApp:
             
             with col2:
                 st.markdown("""
-                <div style='background-color: #f0fdf4; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #22c55e;'>
+                <div style='background-color: #FAF5FF; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #22c55e;'>
                     <h3>📊 Visualizações</h3>
                     <p>• Gráficos interativos</p>
                     <p>• Relatórios detalhados</p>
@@ -192,7 +192,7 @@ class FinanceApp:
             
             with col3:
                 st.markdown("""
-                <div style='background-color: #fff; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #eab308;'>
+                <div style='background-color: #FAF5FF; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #eab308;'>
                     <h3>🎯 Metas</h3>
                     <p>• Controle financeiro</p>
                     <p>• Economia inteligente</p>
