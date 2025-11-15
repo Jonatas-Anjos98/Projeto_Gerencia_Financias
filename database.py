@@ -12,6 +12,7 @@ class DatabaseManager:
         self.conn = sqlite3.connect(db_path, check_same_thread=False)
         self.conn.row_factory = sqlite3.Row
         self.create_tables()
+        self.update_database_schema()
         self.insert_default_categories()
     
     def create_tables(self):
@@ -43,19 +44,27 @@ class DatabaseManager:
             )
         ''')
         
-        # Tabela de orçamentos
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS budgets (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                category TEXT NOT NULL,
-                amount REAL NOT NULL CHECK(amount >= 0),
-                month_year TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (category) REFERENCES categories (name)
-            )
-        ''')
-        
         self.conn.commit()
+    
+    def update_database_schema(self):
+        """Atualiza o schema do banco se necessário"""
+        cursor = self.conn.cursor()
+        
+        try:
+            # Verifica se a coluna created_at existe na tabela transactions
+            cursor.execute("PRAGMA table_info(transactions)")
+            columns = [column[1] for column in cursor.fetchall()]
+            
+            if 'created_at' not in columns:
+                # Adiciona a coluna created_at se não existir
+                cursor.execute('''
+                    ALTER TABLE transactions 
+                    ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                ''')
+            
+            self.conn.commit()
+        except Exception as e:
+            print(f"Aviso na atualização do schema: {e}")
     
     def insert_default_categories(self):
         default_categories = [
@@ -122,14 +131,15 @@ class DatabaseManager:
                 query += ' AND t.date <= ?'
                 params.append(filters['end_date'])
         
-        query += ' ORDER BY t.date DESC, t.created_at DESC'
+        # Ordenação segura
+        query += ' ORDER BY t.date DESC'
         
         if limit:
             query += ' LIMIT ?'
             params.append(limit)
         
         df = pd.read_sql_query(query, self.conn, params=params)
-        if not df.empty:
+        if not df.empty and 'date' in df.columns:
             df['date'] = pd.to_datetime(df['date'])
         return df
     

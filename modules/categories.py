@@ -47,7 +47,6 @@ class CategoryManager:
             
             if submitted:
                 if category_name and category_type and category_icon:
-                    # Em uma versão futura, implementar adição de categorias
                     st.success("🎉 Funcionalidade de adição de categorias em desenvolvimento!")
                 else:
                     st.error("Por favor, preencha todos os campos.")

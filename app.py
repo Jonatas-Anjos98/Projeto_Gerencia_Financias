@@ -181,4 +181,52 @@ class FinanceApp:
                 """, unsafe_allow_html=True)
             
             with col2:
-                st.markdown
+                st.markdown("""
+                <div style='background-color: #f0fdf4; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #22c55e;'>
+                    <h3>📊 Visualizações</h3>
+                    <p>• Gráficos interativos</p>
+                    <p>• Relatórios detalhados</p>
+                    <p>• Análise por categoria</p>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col3:
+                st.markdown("""
+                <div style='background-color: #fef7cd; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #eab308;'>
+                    <h3>🎯 Metas</h3>
+                    <p>• Controle financeiro</p>
+                    <p>• Economia inteligente</p>
+                    <p>• Planejamento futuro</p>
+                </div>
+                """, unsafe_allow_html=True)
+    
+    def show_about(self):
+        st.header("ℹ️ Sobre o FinanceFlow")
+        st.markdown("""
+        ### 💰 O que é o FinanceFlow?
+        
+        FinanceFlow é um gerenciador financeiro pessoal desenvolvido para ajudar você a ter controle total sobre seu dinheiro.
+        
+        **✨ Funcionalidades:**
+        - 📝 Registro de receitas e despesas
+        - 🏷️ Categorização inteligente
+        - 📊 Dashboard com métricas em tempo real
+        - 📈 Gráficos interativos e relatórios
+        - 📋 Histórico com filtros avançados
+        - 📥 Exportação de dados
+        
+        **🛠️ Tecnologias:**
+        - Python 🐍
+        - Streamlit ⚡
+        - Plotly 📊
+        - Pandas 🗃️
+        - SQLite 💾
+        
+        **🎯 Objetivo:**
+        Facilitar o controle financeiro pessoal com uma interface intuitiva e análises poderosas.
+        """)
+
+# Executar a aplicação
+if __name__ == "__main__":
+    app = FinanceApp()
+    app.run()
