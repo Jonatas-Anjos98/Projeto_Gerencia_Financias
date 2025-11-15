@@ -18,20 +18,23 @@ class TransactionManager:
                     min_value=0.01, 
                     step=0.01,
                     format="%.2f",
-                    help="Digite o valor da transação"
+                    help="Digite o valor da transação",
+                    key="amount_input"
                 )
                 
                 transaction_type = st.radio(
                     "Tipo de Transação",
                     ["income", "expense"],
                     format_func=lambda x: "📈 Receita" if x == "income" else "📉 Despesa",
-                    horizontal=True
+                    horizontal=True,
+                    key="type_radio"
                 )
                 
                 transaction_date = st.date_input(
                     "Data",
                     date.today(),
-                    help="Data da transação"
+                    help="Data da transação",
+                    key="date_input"
                 )
             
             with col2:
@@ -45,10 +48,6 @@ class TransactionManager:
                 category_options = categories_df['name'].tolist()
                 category_icons = categories_df.set_index('name')['icon'].to_dict()
                 
-                # Debug: mostrar qual tipo está sendo filtrado
-                # st.write(f"Tipo selecionado: {transaction_type}")
-                # st.write(f"Categorias disponíveis: {category_options}")
-                
                 # Formatar opções com ícones
                 formatted_categories = [
                     f"{category_icons.get(cat, '💰')} {cat}" 
@@ -58,7 +57,8 @@ class TransactionManager:
                 selected_category_formatted = st.selectbox(
                     "Categoria",
                     formatted_categories,
-                    help="Selecione a categoria da transação"
+                    help="Selecione a categoria da transação",
+                    key="category_select"
                 )
                 
                 # Extrair nome da categoria sem o ícone
@@ -67,15 +67,11 @@ class TransactionManager:
                 description = st.text_input(
                     "Descrição",
                     placeholder="Ex: Salário mensal, Conta de luz...",
-                    help="Descrição opcional da transação"
-                )
-                
-                description = st.text_input(
-                    "Descrição",
-                    placeholder="Ex: Salário mensal, Conta de luz...",
-                    help="Descrição opcional da transação"
+                    help="Descrição opcional da transação",
+                    key="description_input"
                 )
             
+            # BOTÃO DE SUBMIT CORRETO - usando st.form_submit_button()
             submitted = st.form_submit_button(
                 "💾 Adicionar Transação",
                 use_container_width=True
@@ -107,19 +103,30 @@ class TransactionManager:
             filter_type = st.selectbox(
                 "Tipo",
                 ["Todos", "income", "expense"],
-                format_func=lambda x: "Todos" if x == "Todos" else ("Receita" if x == "income" else "Despesa")
+                format_func=lambda x: "Todos" if x == "Todos" else ("Receita" if x == "income" else "Despesa"),
+                key="filter_type_select"
             )
         
         with col2:
             categories = self.db.get_categories()
             category_options = ["Todas"] + categories['name'].tolist()
-            filter_category = st.selectbox("Categoria", category_options)
+            filter_category = st.selectbox(
+                "Categoria", 
+                category_options,
+                key="filter_category_select"
+            )
         
         with col3:
-            filter_start_date = st.date_input("Data Inicial")
+            filter_start_date = st.date_input(
+                "Data Inicial",
+                key="start_date_input"
+            )
         
         with col4:
-            filter_end_date = st.date_input("Data Final")
+            filter_end_date = st.date_input(
+                "Data Final",
+                key="end_date_input"
+            )
         
         # Aplicar filtros
         filters = {}
@@ -182,7 +189,8 @@ class TransactionManager:
                 data=csv,
                 file_name="transacoes.csv",
                 mime="text/csv",
-                use_container_width=True
+                use_container_width=True,
+                key="export_button"
             )
             
         else:
