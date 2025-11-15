@@ -172,31 +172,31 @@ class FinanceApp:
             
             with col1:
                 st.markdown("""
-                <div style='background-color: #FAF5FF; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #3b82f6;'>
-                    <h3>📝 Primeiros Passos</h3>
-                    <p>1. Vá em <b>Nova Transação</b></p>
-                    <p>2. Adicione suas receitas e despesas</p>
-                    <p>3. Acompanhe seus gastos</p>
+                <div style='background-color: #1E40AF; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #3B82F6;'>
+                    <h3 style='color: white;'>📝 Primeiros Passos</h3>
+                    <p style='color: white;'>1. Vá em <b>Nova Transação</b></p>
+                    <p style='color: white;'>2. Adicione suas receitas e despesas</p>
+                    <p style='color: white;'>3. Acompanhe seus gastos</p>
                 </div>
                 """, unsafe_allow_html=True)
             
             with col2:
                 st.markdown("""
-                <div style='background-color: #FAF5FF; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #22c55e;'>
-                    <h3>📊 Visualizações</h3>
-                    <p>• Gráficos interativos</p>
-                    <p>• Relatórios detalhados</p>
-                    <p>• Análise por categoria</p>
+                <div style='background-color: #047857; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #10B981;'>
+                    <h3 style='color: white;'>📊 Visualizações</h3>
+                    <p style='color: white;'>• Gráficos interativos</p>
+                    <p style='color: white;'>• Relatórios detalhados</p>
+                    <p style='color: white;'>• Análise por categoria</p>
                 </div>
                 """, unsafe_allow_html=True)
             
             with col3:
                 st.markdown("""
-                <div style='background-color: #FAF5FF; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #eab308;'>
-                    <h3>🎯 Metas</h3>
-                    <p>• Controle financeiro</p>
-                    <p>• Economia inteligente</p>
-                    <p>• Planejamento futuro</p>
+                <div style='background-color: #B45309; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #F59E0B;'>
+                    <h3 style='color: white;'>🎯 Metas</h3>
+                    <p style='color: white;'>• Controle financeiro</p>
+                    <p style='color: white;'>• Economia inteligente</p>
+                    <p style='color: white;'>• Planejamento futuro</p>
                 </div>
                 """, unsafe_allow_html=True)
     
