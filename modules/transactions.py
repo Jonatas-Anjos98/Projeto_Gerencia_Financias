@@ -35,10 +35,19 @@ class TransactionManager:
                 )
             
             with col2:
-                # Obter categorias baseadas no tipo
+                # Obter categorias baseadas no tipo selecionado
                 categories_df = self.db.get_categories(type=transaction_type)
+                
+                if categories_df.empty:
+                    st.error("Nenhuma categoria encontrada para este tipo de transação")
+                    return
+                
                 category_options = categories_df['name'].tolist()
                 category_icons = categories_df.set_index('name')['icon'].to_dict()
+                
+                # Debug: mostrar qual tipo está sendo filtrado
+                # st.write(f"Tipo selecionado: {transaction_type}")
+                # st.write(f"Categorias disponíveis: {category_options}")
                 
                 # Formatar opções com ícones
                 formatted_categories = [
@@ -53,7 +62,13 @@ class TransactionManager:
                 )
                 
                 # Extrair nome da categoria sem o ícone
-                selected_category = selected_category_formatted.split(' ', 1)[1]
+                selected_category = selected_category_formatted.split(' ', 1)[1] if selected_category_formatted else ""
+                
+                description = st.text_input(
+                    "Descrição",
+                    placeholder="Ex: Salário mensal, Conta de luz...",
+                    help="Descrição opcional da transação"
+                )
                 
                 description = st.text_input(
                     "Descrição",
