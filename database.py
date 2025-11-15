@@ -158,7 +158,8 @@ class DatabaseManager:
             params.append(type)
         query += ' ORDER BY type, name'
         
-        return pd.read_sql_query(query, self.conn, params=params)
+        result = pd.read_sql_query(query, self.conn, params=params)
+        return result
     
     # Métodos para Analytics
     def get_financial_summary(self, start_date=None, end_date=None):

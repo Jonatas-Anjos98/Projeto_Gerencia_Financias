@@ -42,9 +42,9 @@ class TransactionManager:
                 categories_df = self.db.get_categories(type=transaction_type)
                 
                 # DEBUG: Mostrar informações
-                # st.write(f"Tipo selecionado: {transaction_type}")
-                # st.write(f"Total de categorias encontradas: {len(categories_df)}")
-                # st.write(f"Categorias: {categories_df['name'].tolist() if not categories_df.empty else 'Nenhuma'}")
+                st.write(f"Tipo selecionado: {transaction_type}")
+                st.write(f"Total de categorias encontradas: {len(categories_df)}")
+                st.write(f"Categorias: {categories_df['name'].tolist() if not categories_df.empty else 'Nenhuma'}")
                 
                 if categories_df.empty:
                     st.error("❌ Nenhuma categoria encontrada para este tipo de transação")
