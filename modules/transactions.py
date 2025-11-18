@@ -9,117 +9,82 @@ class TransactionManager:
     def show_transaction_form(self):
         st.header("💸 Nova Transação")
         
-        # Usar session_state para controlar o tipo selecionado
-        if 'transaction_type' not in st.session_state:
-            st.session_state.transaction_type = "income"
+        # Inicializar session state para controle
+        if 'last_transaction_type' not in st.session_state:
+            st.session_state.last_transaction_type = "income"
         
-        with st.form("transaction_form", clear_on_submit=True):
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                amount = st.number_input(
-                    "Valor (R$)", 
-                    min_value=0.01, 
-                    step=0.01,
-                    format="%.2f",
-                    help="Digite o valor da transação",
-                    key="amount_input"
-                )
-                
-                # Radio button que atualiza o session_state
-                new_transaction_type = st.radio(
-                    "Tipo de Transação",
-                    ["income", "expense"],
-                    format_func=lambda x: "📈 Receita" if x == "income" else "📉 Despesa",
-                    horizontal=True,
-                    key="type_radio"
-                )
-                
-                # Se o tipo mudou, recarregar a página
-                if new_transaction_type != st.session_state.transaction_type:
-                    st.session_state.transaction_type = new_transaction_type
-                    st.rerun()
-                
-                transaction_date = st.date_input(
-                    "Data",
-                    date.today(),
-                    help="Data da transação",
-                    key="date_input"
-                )
-            
-            with col2:
-                # Obter categorias baseadas no tipo atual
-                categories_df = self.db.get_categories(type=st.session_state.transaction_type)
-                
-                # DEBUG - Mostrar informações
-                st.write(f"**Tipo atual:** {st.session_state.transaction_type}")
-                st.write(f"**Categorias carregadas:** {len(categories_df)}")
-                
-                if categories_df.empty:
-                    st.error("❌ Nenhuma categoria encontrada para este tipo de transação")
-                    selected_category = ""
-                else:
-                    # Remover duplicatas
-                    categories_df = categories_df.drop_duplicates(subset=['name'])
-                    category_options = categories_df['name'].tolist()
-                    category_icons = categories_df.set_index('name')['icon'].to_dict()
-                    
-                    # Mostrar quais categorias estão disponíveis
-                    st.write(f"Categorias disponíveis: {', '.join(category_options)}")
-                    
-                    # Formatar opções com ícones
-                    formatted_categories = [
-                        f"{category_icons.get(cat, '💰')} {cat}" 
-                        for cat in category_options
-                    ]
-                    
-                    selected_category_formatted = st.selectbox(
-                        "Categoria",
-                        formatted_categories,
-                        help="Selecione a categoria da transação",
-                        key=f"category_select_{st.session_state.transaction_type}"
-                    )
-                    
-                    # Extrair nome da categoria sem o ícone
-                    if selected_category_formatted:
-                        selected_category = selected_category_formatted.split(' ', 1)[1]
-                    else:
-                        selected_category = ""
-                        st.error("❌ Por favor, selecione uma categoria")
-                
-                description = st.text_input(
-                    "Descrição",
-                    placeholder="Ex: Salário mensal, Conta de luz...",
-                    help="Descrição opcional da transação",
-                    key="description_input"
-                )
-            
-            # Botão de submit
-            submitted = st.form_submit_button(
-                "💾 Adicionar Transação",
-                use_container_width=True,
-                type="primary"
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            amount = st.number_input(
+                "Valor (R$)", 
+                min_value=0.01, 
+                step=0.01,
+                format="%.2f",
+                key="amount_input"
             )
             
-            if submitted:
-                if amount > 0 and selected_category:
-                    try:
-                        transaction_id = self.db.add_transaction(
-                            float(amount), 
-                            st.session_state.transaction_type, 
-                            selected_category, 
-                            description, 
-                            transaction_date
-                        )
-                        st.success("✅ Transação adicionada com sucesso!")
-                        # Limpar o session_state para recarregar
-                        if 'transaction_type' in st.session_state:
-                            del st.session_state.transaction_type
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"❌ Erro ao adicionar transação: {e}")
-                else:
-                    st.error("❌ Por favor, preencha todos os campos obrigatórios.")
+            transaction_type = st.radio(
+                "Tipo de Transação",
+                ["income", "expense"],
+                format_func=lambda x: "📈 Receita" if x == "income" else "📉 Despesa",
+                horizontal=True,
+                key="type_radio"
+            )
+            
+            transaction_date = st.date_input(
+                "Data",
+                date.today(),
+                key="date_input"
+            )
+        
+        with col2:
+            # Forçar atualização quando o tipo mudar
+            if transaction_type != st.session_state.last_transaction_type:
+                st.session_state.last_transaction_type = transaction_type
+                st.rerun()
+            
+            # Obter categorias baseadas no tipo
+            categories_df = self.db.get_categories(type=transaction_type)
+            
+            if not categories_df.empty:
+                category_options = categories_df['name'].tolist()
+                category_icons = categories_df.set_index('name')['icon'].to_dict()
+                
+                # Criar dropdown com ícones
+                selected_category = st.selectbox(
+                    "Categoria",
+                    options=category_options,
+                    format_func=lambda x: f"{category_icons.get(x, '💰')} {x}",
+                    key=f"category_{transaction_type}"
+                )
+            else:
+                st.error("❌ Nenhuma categoria encontrada")
+                selected_category = ""
+            
+            description = st.text_input(
+                "Descrição",
+                placeholder="Ex: Salário mensal, Conta de luz...",
+                key="description_input"
+            )
+        
+        # Botão para adicionar
+        if st.button("💾 Adicionar Transação", use_container_width=True, type="primary"):
+            if amount > 0 and selected_category:
+                try:
+                    self.db.add_transaction(
+                        float(amount), 
+                        transaction_type, 
+                        selected_category, 
+                        description, 
+                        transaction_date
+                    )
+                    st.success("✅ Transação adicionada com sucesso!")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"❌ Erro: {e}")
+            else:
+                st.error("❌ Preencha valor e categoria")
     
     def show_transaction_history(self):
         st.header("📋 Histórico de Transações")
@@ -132,29 +97,18 @@ class TransactionManager:
                 "Tipo",
                 ["Todos", "income", "expense"],
                 format_func=lambda x: "Todos" if x == "Todos" else ("Receita" if x == "income" else "Despesa"),
-                key="filter_type_select"
             )
         
         with col2:
             categories = self.db.get_categories()
             category_options = ["Todas"] + categories['name'].tolist()
-            filter_category = st.selectbox(
-                "Categoria", 
-                category_options,
-                key="filter_category_select"
-            )
+            filter_category = st.selectbox("Categoria", category_options)
         
         with col3:
-            filter_start_date = st.date_input(
-                "Data Inicial",
-                key="start_date_input"
-            )
+            filter_start_date = st.date_input("Data Inicial")
         
         with col4:
-            filter_end_date = st.date_input(
-                "Data Final",
-                key="end_date_input"
-            )
+            filter_end_date = st.date_input("Data Final")
         
         # Aplicar filtros
         filters = {}
@@ -171,38 +125,40 @@ class TransactionManager:
         transactions = self.db.get_transactions(filters=filters)
         
         if not transactions.empty:
-            # Formatar dados para exibição
+            # Adicionar coluna de ações
             display_df = transactions.copy()
-            display_df['type_display'] = display_df['type'].map({
-                'income': '📈 Receita', 
-                'expense': '📉 Despesa'
-            })
-            display_df['amount_display'] = display_df['amount'].apply(
-                lambda x: f"R$ {x:,.2f}"
-            )
-            display_df['date_display'] = display_df['date'].dt.strftime('%d/%m/%Y')
-            display_df['category_display'] = display_df['icon'] + ' ' + display_df['category']
+            display_df['Ações'] = "🗑️"
+            
+            # Formatar dados
+            display_df['Tipo'] = display_df['type'].map({'income': '📈 Receita', 'expense': '📉 Despesa'})
+            display_df['Valor'] = display_df['amount'].apply(lambda x: f"R$ {x:,.2f}")
+            display_df['Data'] = display_df['date'].dt.strftime('%d/%m/%Y')
+            display_df['Categoria'] = display_df['icon'] + ' ' + display_df['category']
             
             # Colunas para exibição
-            display_columns = [
-                'date_display', 'type_display', 'category_display', 
-                'amount_display', 'description'
-            ]
+            display_columns = ['Data', 'Tipo', 'Categoria', 'Valor', 'description', 'Ações']
             
-            st.dataframe(
-                display_df[display_columns],
-                column_config={
-                    'date_display': 'Data',
-                    'type_display': 'Tipo',
-                    'category_display': 'Categoria',
-                    'amount_display': 'Valor',
-                    'description': 'Descrição'
-                },
-                use_container_width=True,
-                hide_index=True
-            )
+            # Mostrar tabela
+            for idx, row in display_df.iterrows():
+                col1, col2, col3, col4, col5, col6 = st.columns([2, 2, 2, 2, 3, 1])
+                
+                with col1:
+                    st.write(row['Data'])
+                with col2:
+                    st.write(row['Tipo'])
+                with col3:
+                    st.write(row['Categoria'])
+                with col4:
+                    st.write(row['Valor'])
+                with col5:
+                    st.write(row['description'] or "-")
+                with col6:
+                    if st.button("🗑️", key=f"delete_{row['id']}"):
+                        if self.db.delete_transaction(row['id']):
+                            st.success("✅ Transação excluída!")
+                            st.rerun()
             
-            # Estatísticas rápidas
+            # Estatísticas
             total_income = display_df[display_df['type'] == 'income']['amount'].sum()
             total_expense = display_df[display_df['type'] == 'expense']['amount'].sum()
             
@@ -210,16 +166,9 @@ class TransactionManager:
             col1.metric("📈 Total Receitas", f"R$ {total_income:,.2f}")
             col2.metric("📉 Total Despesas", f"R$ {total_expense:,.2f}")
             
-            # Opção de exportar
+            # Exportar
             csv = transactions[['date', 'type', 'category', 'amount', 'description']].to_csv(index=False)
-            st.download_button(
-                label="📥 Exportar CSV",
-                data=csv,
-                file_name="transacoes.csv",
-                mime="text/csv",
-                use_container_width=True,
-                key="export_button"
-            )
+            st.download_button("📥 Exportar CSV", data=csv, file_name="transacoes.csv", mime="text/csv")
             
         else:
-            st.info("📝 Nenhuma transação encontrada com os filtros selecionados.")
+            st.info("📝 Nenhuma transação encontrada")

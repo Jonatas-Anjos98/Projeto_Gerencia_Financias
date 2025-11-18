@@ -1,21 +1,13 @@
 import streamlit as st
-import pandas as pd
-from datetime import datetime
-
-# Import dos módulos
 from database import DatabaseManager
 from modules.transactions import TransactionManager
 from modules.categories import CategoryManager
 from modules.reports import ReportGenerator
 from modules.analytics import FinancialAnalytics
+from auth import AuthManager
 
-# Configuração da página
-st.set_page_config(
-    page_title="FinanceFlow - Gerenciador Financeiro",
-    page_icon="💰",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+# Configuração
+st.set_page_config(page_title="FinanceFlow", page_icon="💰", layout="wide")
 
 # CSS personalizado
 st.markdown("""
@@ -33,64 +25,60 @@ st.markdown("""
         border-radius: 10px;
         border-left: 4px solid #3b82f6;
     }
-    .sidebar .sidebar-content {
-        background-color: #f1f5f9;
-    }
 </style>
 """, unsafe_allow_html=True)
 
+# Inicializar gerenciadores
+auth = AuthManager()
+
+# Verificar se está logado
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
+
+if not st.session_state.logged_in:
+    auth.show_login_form()
+    st.stop()
+
+# App principal (só executa se estiver logado)
+db = DatabaseManager()
+analytics = FinancialAnalytics(db)
+transaction_manager = TransactionManager(db)
+category_manager = CategoryManager(db)
+report_generator = ReportGenerator(db, analytics)
+
 class FinanceApp:
-    def __init__(self):
-        self.db = DatabaseManager()
-        self.analytics = FinancialAnalytics(self.db)
-        self.transaction_manager = TransactionManager(self.db)
-        self.category_manager = CategoryManager(self.db)
-        self.report_generator = ReportGenerator(self.db, self.analytics)
-    
     def run(self):
         # Header principal
         st.markdown('<h1 class="main-header">💸 FinanceFlow</h1>', unsafe_allow_html=True)
         st.markdown("### Seu gerenciador financeiro pessoal inteligente")
         
-        # Sidebar com navegação
-        with st.sidebar:
-            st.image("https://cdn-icons-png.flaticon.com/512/3135/3135679.png", width=80)
-            st.title("Navegação")
-            
-            menu_option = st.radio(
-                "Selecione uma opção:",
-                ["📊 Dashboard", "💸 Nova Transação", "📋 Histórico", "📈 Relatórios", "🏷️ Categorias", "ℹ️ Sobre"]
-            )
-            
-            st.markdown("---")
-            
-            # Resumo rápido na sidebar
-            summary = self.db.get_financial_summary()
-            st.metric("💰 Saldo Atual", f"R$ {summary['balance']:,.2f}")
-            st.metric("🎯 Economia", f"{summary['savings_rate']:.1f}%")
-            
-            st.markdown("---")
-            st.markdown("*Desenvolvido com ❤️ usando Streamlit*")
+        st.sidebar.title(f"👋 Olá, {st.session_state.username}!")
         
-        # Navegação entre páginas
-        if menu_option == "📊 Dashboard":
+        if st.sidebar.button("🚪 Sair"):
+            st.session_state.logged_in = False
+            st.rerun()
+        
+        menu = st.sidebar.radio("Navegação", [
+            "📊 Dashboard", "💸 Nova Transação", "📋 Histórico", 
+            "📈 Relatórios", "🏷️ Categorias"
+        ])
+        
+        if menu == "📊 Dashboard":
             self.show_dashboard()
-        elif menu_option == "💸 Nova Transação":
-            self.transaction_manager.show_transaction_form()
-        elif menu_option == "📋 Histórico":
-            self.transaction_manager.show_transaction_history()
-        elif menu_option == "📈 Relatórios":
-            self.report_generator.show_financial_reports()
-        elif menu_option == "🏷️ Categorias":
-            self.category_manager.show_category_management()
-        elif menu_option == "ℹ️ Sobre":
-            self.show_about()
+        elif menu == "💸 Nova Transação":
+            transaction_manager.show_transaction_form()
+        elif menu == "📋 Histórico":
+            transaction_manager.show_transaction_history()
+        elif menu == "📈 Relatórios":
+            report_generator.show_financial_reports()
+        elif menu == "🏷️ Categorias":
+            category_manager.show_category_management()
     
     def show_dashboard(self):
         st.header("📊 Dashboard Financeiro")
         
         # Métricas principais
-        summary = self.db.get_financial_summary()
+        summary = db.get_financial_summary()
         
         col1, col2, col3, col4 = st.columns(4)
         
@@ -120,26 +108,26 @@ class FinanceApp:
             st.markdown('</div>', unsafe_allow_html=True)
         
         # Gráficos do dashboard
-        monthly_data = self.db.get_monthly_summary()
-        expense_by_category = self.db.get_category_analysis('expense')
+        monthly_data = db.get_monthly_summary()
+        expense_by_category = db.get_category_analysis('expense')
         
         if not monthly_data.empty:
             col1, col2 = st.columns(2)
             
             with col1:
                 # Gráfico de tendência
-                trend_chart = self.analytics.create_monthly_trend_chart(monthly_data)
+                trend_chart = analytics.create_monthly_trend_chart(monthly_data)
                 st.plotly_chart(trend_chart, use_container_width=True)
             
             with col2:
                 # Gráfico de pizza de gastos
                 if not expense_by_category.empty:
-                    pie_chart = self.analytics.create_expense_pie_chart(expense_by_category)
+                    pie_chart = analytics.create_expense_pie_chart(expense_by_category)
                     st.plotly_chart(pie_chart, use_container_width=True)
             
             # Últimas transações
             st.subheader("📝 Últimas Transações")
-            recent_transactions = self.db.get_transactions(limit=10)
+            recent_transactions = db.get_transactions(limit=10)
             
             if not recent_transactions.empty:
                 display_df = recent_transactions.copy()
@@ -199,34 +187,7 @@ class FinanceApp:
                     <p style='color: white;'>• Planejamento futuro</p>
                 </div>
                 """, unsafe_allow_html=True)
-    
-    def show_about(self):
-        st.header("ℹ️ Sobre o FinanceFlow")
-        st.markdown("""
-        ### 💰 O que é o FinanceFlow?
-        
-        FinanceFlow é um gerenciador financeiro pessoal desenvolvido para ajudar você a ter controle total sobre seu dinheiro.
-        
-        **✨ Funcionalidades:**
-        - 📝 Registro de receitas e despesas
-        - 🏷️ Categorização inteligente
-        - 📊 Dashboard com métricas em tempo real
-        - 📈 Gráficos interativos e relatórios
-        - 📋 Histórico com filtros avançados
-        - 📥 Exportação de dados
-        
-        **🛠️ Tecnologias:**
-        - Python 🐍
-        - Streamlit ⚡
-        - Plotly 📊
-        - Pandas 🗃️
-        - SQLite 💾
-        
-        **🎯 Objetivo:**
-        Facilitar o controle financeiro pessoal com uma interface intuitiva e análises poderosas.
-        """)
 
-# Executar a aplicação
 if __name__ == "__main__":
     app = FinanceApp()
     app.run()
