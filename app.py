@@ -48,10 +48,6 @@ report_generator = ReportGenerator(db, analytics)
 
 class FinanceApp:
     def run(self):
-        # Header principal
-        st.markdown('<h1 class="main-header">💸 FinanceFlow</h1>', unsafe_allow_html=True)
-        st.markdown("### Seu gerenciador financeiro pessoal inteligente")
-        
         st.sidebar.title(f"👋 Olá, {st.session_state.username}!")
         
         if st.sidebar.button("🚪 Sair"):
@@ -66,9 +62,13 @@ class FinanceApp:
         if menu == "📊 Dashboard":
             self.show_dashboard()
         elif menu == "💸 Nova Transação":
-            transaction_manager.show_transaction_form()
+            # Verificar se está editando
+            if not transaction_manager.show_edit_form():
+                transaction_manager.show_transaction_form()
         elif menu == "📋 Histórico":
-            transaction_manager.show_transaction_history()
+            # Verificar se está editando
+            if not transaction_manager.show_edit_form():
+                transaction_manager.show_transaction_history()
         elif menu == "📈 Relatórios":
             report_generator.show_financial_reports()
         elif menu == "🏷️ Categorias":

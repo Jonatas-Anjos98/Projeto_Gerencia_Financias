@@ -80,8 +80,7 @@ class AuthManager:
     def show_login_form(self):
         st.header("🔐 Login")
         
-        # Informações do usuário padrão
-        st.info("💡 **Usuário padrão:** admin / 1234")
+        # Informações do usuário padrão: admin / 1234
         
         with st.form("login_form"):
             username = st.text_input("Usuário", value="admin")
